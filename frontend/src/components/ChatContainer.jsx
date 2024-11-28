@@ -47,6 +47,13 @@ const ChatContainer = () => {
     <div className="flex-1 flex flex-col overflow-auto">
       <ChatHeader />
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {messages.length === 0 && (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="text-center">
+          <h1 className="sm:text-sm md:text-xl opacity-70">No messages yet. Start chatting with {selectedUser.fullName}!</h1>
+          </div>
+        </div>
+      )}
         {messages.map((message) => (
           <div
             key={message._id}
