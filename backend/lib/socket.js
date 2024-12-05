@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
+import User from "../models/user.model.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -29,10 +30,18 @@ io.on("connection", (socket) => {
         isTyping,
       };
     } else {
-        delete typingUsers[senderId];
+      delete typingUsers[senderId];
     }
     const receiverSocketId = getReceiverSocketId(receiverId);
     io.to(receiverSocketId).emit("getTypingUsers", Object.keys(typingUsers));
+
+    //send live typing message to receiver
+    
+    User.findById(receiverId).then((user) => {
+      if (user.showTypingMessage) {
+
+      }
+    });
   });
   socket.on("disconnect", () => {
     delete userSocketMap[userId];
