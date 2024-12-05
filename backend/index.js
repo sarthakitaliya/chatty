@@ -4,6 +4,7 @@ import cors from "cors";
 
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
+import profileRoutes from "./routes/profile.route.js"
 
 import { connectDB } from "./lib/db.js";
 import cookieParser from "cookie-parser";
@@ -24,6 +25,7 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/profile", profileRoutes)
 
 server.listen(port, () => {
   console.log("Server is running on port " + port);
