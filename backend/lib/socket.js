@@ -1,32 +1,43 @@
-import {Server} from "socket.io";
+import { Server } from "socket.io";
 import http from "http";
 import express from "express";
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: {
-        origin: [process.env.FRONTEND_URL],
-    },
+  cors: {
+    origin: [process.env.FRONTEND_URL],
+  },
 });
 
 export function getReceiverSocketId(userId) {
-    return userSocketMap[userId];
+  return userSocketMap[userId];
 }
 //used to store online users
 const userSocketMap = {}; //{userId: socketId}
+const typingUsers = {}; //{userId: {receiverId, isTyping}}
 
 io.on("connection", (socket) => {
-    // console.log("User connected", socket.id);
-    const userId = socket.handshake.query.userId;
-    if(userId) userSocketMap[userId] = socket.id;
-    
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
-    socket.on("disconnect", () => {
-        // console.log("User disconnected", socket.id);
-        delete userSocketMap[userId];
-        io.emit("getOnlineUsers", Object.keys(userSocketMap));
-    })
-})
+  const userId = socket.handshake.query.userId;
+  if (userId) userSocketMap[userId] = socket.id;
 
-export {io, server, app};
+  io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  socket.on("typing", ({ receiverId, senderId, isTyping }) => {
+    if (isTyping) {
+      typingUsers[senderId] = {
+        receiverId,
+        isTyping,
+      };
+    } else {
+        delete typingUsers[senderId];
+    }
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    io.to(receiverSocketId).emit("getTypingUsers", Object.keys(typingUsers));
+  });
+  socket.on("disconnect", () => {
+    delete userSocketMap[userId];
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  });
+});
+
+export { io, server, app };
