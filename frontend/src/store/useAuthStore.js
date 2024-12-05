@@ -69,13 +69,23 @@ export const useAuthStore = create((set, get) => ({
   updateProfile: async (data) => {
     set({ isUpdatingProfile: true });
     try {
-      const res = await axiosInstance.put("/auth/update-profile", data);
+      const res = await axiosInstance.put("/profile/update-profile", data);
       set({ authUser: res.data });
       toast.success("Profile updated successfully");
     } catch (error) {
-      console.log("error in updateProfile " + error.response.data.message);
+      console.log("error in updateProfile " + error.response);
     } finally {
       set({ isUpdatingProfile: false });
+    }
+  },  
+  changePreference: async (value) => {
+    const userId = get().authUser._id;
+    try {
+      const res = await axiosInstance.put("/profile/update-preference", {value, userId});
+      set({ authUser: res.data });
+      toast.success("Preference updated successfully");
+    } catch (error) {
+      console.log("error in changePreference " + error.response);
     }
   },
   connectSocket: () => {
