@@ -12,13 +12,24 @@ const io = new Server(server, {
 });
 
 export function getReceiverSocketId(userId) {
-  return userSocketMap[userId];
+  const socketId = userSocketMap[userId];
+  return socketId;
 }
 //used to store online users
 const userSocketMap = {}; //{userId: socketId}
-const typingUsers = {}; //{userId: {receiverId, isTyping}}
+const typingUsers = {}; //{userId: {receiverId, isTyping, typingValue}}
 
-io.on("connection", (socket) => {
+io.use(async (socket, next) => {
+  try {
+    const userId = socket.handshake.query.userId;
+    const user = await User.findById(userId);
+    socket.user = user;
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+io.on("connection", async (socket) => {
   const userId = socket.handshake.query.userId;
   if (userId) userSocketMap[userId] = socket.id;
 
@@ -32,20 +43,17 @@ io.on("connection", (socket) => {
     } else {
       delete typingUsers[senderId];
     }
+
     const receiverSocketId = getReceiverSocketId(receiverId);
     io.to(receiverSocketId).emit("getTypingUsers", Object.keys(typingUsers));
-
-    //send live typing message to receiver
-    
-    User.findById(receiverId).then((user) => {
-      if (user.showTypingMessage) {
-
-      }
-    });
   });
+  socket.on("sendLiveMessages", (value, senderId, receiverId) => {
+    const receiverSocketId = getReceiverSocketId(receiverId);    
+    socket.to(receiverSocketId).emit("liveMessage", {value, senderId});    
+  })
   socket.on("disconnect", () => {
     delete userSocketMap[userId];
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    delete typingUsers[userId];
   });
 });
 

@@ -19,7 +19,6 @@ const ProfilePage = () => {
     };
   };
   const handlePrefrence = (e) => {
-    console.log(e.target.checked);
     changePreference(e.target.checked);
   };
 

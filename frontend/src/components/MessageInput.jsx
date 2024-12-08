@@ -1,14 +1,25 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { Image, Send, X } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuthStore } from "../store/useAuthStore";
 
 const MessageInput = () => {
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
-  const { sendMessage, setTypingUser } = useChatStore();
+  const {
+    sendMessage,
+    setTypingUser,
+    unsubscribeTypingUser,
+    sendLiveMessagges,
+    liveMessages,
+    unsubscribeLiveMessages,
+    selectedUser
+  } = useChatStore();
+  const { authUser } = useAuthStore();
   const typingTimeoutRef = useRef(null);
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
 
@@ -29,13 +40,14 @@ const MessageInput = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handelSendMessage = async (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!text.trim() && !imagePreview) return;
     try {
       await sendMessage({ text: text.trim(), image: imagePreview });
       setText("");
       setImagePreview(null);
+      if(liveMessages.senderId == selectedUser._id) sendLiveMessagges("");
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.log(error);
@@ -43,15 +55,23 @@ const MessageInput = () => {
   };
 
   //typing
-  const handleTyping = (e) => {   
+  const handleTyping = (e) => {
     setTypingUser(true);
     
-    if(typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    if(authUser.showTypingMessage){
+      sendLiveMessagges(e.target.value);
+    }
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       setTypingUser(false);
-    }, 3000);   
-
+    }, 2000);
   };
+  useEffect(() => {
+    return () => {
+      unsubscribeTypingUser();
+      unsubscribeLiveMessages();
+    };
+  }, []);
   return (
     <div className="p-4 w-full">
       {imagePreview && (
@@ -73,7 +93,7 @@ const MessageInput = () => {
           </div>
         </div>
       )}
-      <form onSubmit={handelSendMessage} className="flex items-center gap-2">
+      <form onSubmit={handleSendMessage} className="flex items-center gap-2">
         <div className="flex-1 flex gap-2">
           <input
             type="text"
