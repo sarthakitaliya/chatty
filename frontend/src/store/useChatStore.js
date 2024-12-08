@@ -58,20 +58,12 @@ export const useChatStore = create((set, get) => ({
       set({ messages: [...get().messages, newMessage] });
     });
   },
-  unsubscribeFromMessages: () => {
-    const socket = useAuthStore.getState().socket;
-    socket.off("newMessage");
-  },
   setSelectedUser: (selectedUser) => set({ selectedUser }),
   setTypingUser: (value) => {
     const socket = useAuthStore.getState().socket;
     const receiverId = get().selectedUser._id;
     const senderId = useAuthStore.getState().authUser._id;
     socket.emit("typing", { receiverId, senderId, isTyping: value });
-  },
-  unsubscribeTypingUser: () => {
-    const socket = useAuthStore.getState().socket;
-    socket.off("typing");
   },
   sendLiveMessagges: (value) => {
     const socket = useAuthStore.getState().socket;
@@ -81,9 +73,5 @@ export const useChatStore = create((set, get) => ({
     socket.on("liveMessage", ({value, senderId}) => {      
       set({ liveMessages: {senderId: senderId, message: value} });
     })
-  },
-  unsubscribeLiveMessages: () => {
-    const socket = useAuthStore.getState().socket;
-    socket.off("liveMessage");
   },
 }));

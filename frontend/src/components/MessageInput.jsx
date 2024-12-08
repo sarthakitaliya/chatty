@@ -11,10 +11,8 @@ const MessageInput = () => {
   const {
     sendMessage,
     setTypingUser,
-    unsubscribeTypingUser,
     sendLiveMessagges,
     liveMessages,
-    unsubscribeLiveMessages,
     selectedUser
   } = useChatStore();
   const { authUser } = useAuthStore();
@@ -66,12 +64,6 @@ const MessageInput = () => {
       setTypingUser(false);
     }, 2000);
   };
-  useEffect(() => {
-    return () => {
-      unsubscribeTypingUser();
-      unsubscribeLiveMessages();
-    };
-  }, []);
   return (
     <div className="p-4 w-full">
       {imagePreview && (
