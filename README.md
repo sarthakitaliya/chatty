@@ -1,4 +1,4 @@
-# Chatty - A Real-Time Chat Application 🚀
+# Chatty - A Real-Time Chat Application 🚀  [Live Link](https://chatty-frontend-ag8i.onrender.com)
 
 Chatty is an innovative chat application designed to provide seamless and secure communication. With real-time updates and privacy-focused features, it ensures a smooth and user-friendly experience.
 
